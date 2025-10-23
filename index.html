@@ -553,6 +553,60 @@
                 ? JSON.parse(game.shared_pieces) 
                 : game.shared_pieces;
             renderPieces(currentPiecesState, game.turn === currentUserId);
+
+            // --- YENİ EKLENEN KİLİTLENME KONTROLÜ ---
+            if (game.turn === currentUserId && game.status === 'active') {
+                // Sıra bende. Hamle yapabilir miyim diye kontrol et.
+                const canMakeMove = !checkGameOver(currentPiecesState, currentBoardState);
+                
+                if (!canMakeMove) {
+                    // Hamle yapamıyorum. Oyunu bitir.
+                    console.log("Geçerli hamle bulunamadı. Oyun bitiriliyor...");
+                    endGameNoMoves(game); 
+                }
+            }
+            // --- KONTROL SONU ---
+        }
+
+        // --- YENİ FONKSİYON: Hamle kalmayınca oyunu bitir ---
+        async function endGameNoMoves(game) {
+            // Bu fonksiyon, sırası gelen oyuncunun hamlesi kalmadığında çağrılır.
+            // Kazanan, skora göre belirlenir.
+            let newStatus = 'finished';
+            let winnerId = null;
+
+            const opponentScoreKey = `player${playerNumber === 1 ? 2 : 1}_score`;
+            const myScoreKey = `player${playerNumber}_score`;
+            const opponentScore = game[opponentScoreKey];
+            const myScore = game[myScoreKey];
+            
+            if (myScore > opponentScore) {
+                winnerId = currentUserId;
+            } else if (opponentScore > myScore) {
+                winnerId = (playerNumber === 1) ? game.player2_id : game.player1_id;
+            } else {
+                winnerId = 'draw'; // Berabere
+            }
+
+            try {
+                // Sadece sırası olan oyuncu bu güncellemeyi yapar
+                const { error: updateError } = await supabase
+                    .from(GAMES_TABLE)
+                    .update({
+                        status: newStatus,
+                        winner: winnerId,
+                        last_move_by: currentUserId // Bu eylemi kimin tetiklediğini belirt
+                    })
+                    .eq('id', currentGameId);
+
+                if (updateError) throw updateError;
+                // Realtime dinleyicisi bu 'finished' durumunu yakalayıp
+                // 'handleGameOver' fonksiyonunu her iki oyuncu için de tetikleyecek.
+                
+            } catch (error) {
+                console.error("Oyun bitirme hatası (hamle yok):", error);
+                showMessage('Hata', 'Oyun bitirilirken bir hata oluştu.');
+            }
         }
 
         // Oyun tahtasını HTML'e dök (DEĞİŞTİ: Sürükle-bırak eventleri eklendi)
@@ -743,8 +797,7 @@
                 let newSharedPiecesCopy = [...newSharedPieces]; 
                 newSharedPiecesCopy[pieceData.index] = null; // Parçayı kullanıldı olarak işaretle
                 
-                // 6. Oyun bitti mi kontrol et (parçalar yenilenmeden ÖNCE)
-                const isGameOver = checkGameOver(newSharedPiecesCopy, clearedBoard);
+                // 6. DÜZELTME: Oyun bitti mi kontrolü buradan kaldırıldı.
                 
                 // 7. Tüm parçalar kullanıldıysa yenilerini ver
                 let piecesToSave = newSharedPiecesCopy;
@@ -752,22 +805,9 @@
                     piecesToSave = generateNewPieces();
                 }
                 
+                // DÜZELTME: Bu fonksiyon artık oyun bitişine karar vermiyor.
                 let newStatus = 'active';
                 let winnerId = null;
-                
-                if (isGameOver) {
-                    newStatus = 'finished';
-                    const opponentScoreKey = `player${playerNumber === 1 ? 2 : 1}_score`;
-                    const opponentScore = game[opponentScoreKey];
-                    
-                    if (myNewScore > opponentScore) {
-                        winnerId = currentUserId;
-                    } else if (opponentScore > myNewScore) {
-                        winnerId = opponentId;
-                    } else {
-                        winnerId = 'draw'; // Berabere
-                    }
-                }
 
                 // 8. Supabase'i güncelle
                 try {
@@ -781,8 +821,8 @@
                             // DÜZELTME: JSON.stringify kaldırıldı.
                             shared_pieces: piecesToSave, // DEĞİŞTİ: Ortak parçaları güncelle
                             turn: opponentId, // Sırayı rakibe ver
-                            status: newStatus,
-                            winner: winnerId,
+                            status: newStatus, // Her zaman 'active'
+                            winner: winnerId, // Her zaman 'null'
                             last_move_by: currentUserId
                         })
                         .eq('id', currentGameId); // Sadece bu oyunu güncelle
@@ -885,6 +925,7 @@
         }
         
         // Oyuncunun elindeki parçalarla hamle yapıp yapamayacağını kontrol et
+        // DİKKAT: Bu fonksiyon, HİÇ HAMLE YOKSA 'true' döndürür (oyun bitti = true)
         function checkGameOver(pieces, board) {
             // Eğer tüm parçalar null ise (yeni dağıtılacaksa) oyun bitmez
             if (pieces.every(p => p === null)) return false;
@@ -896,13 +937,13 @@
                 for (let y = 0; y < 10; y++) {
                     for (let x = 0; x < 10; x++) {
                         if (checkValidPlacement(piece.shape, x, y, board)) {
-                            return false; // En az 1 geçerli hamle bulundu!
+                            return false; // En az 1 geçerli hamle bulundu! (Oyun bitmedi)
                         }
                     }
                 }
             }
             
-            return true; // Hiç geçerli hamle bulunamadı
+            return true; // Hiç geçerli hamle bulunamadı (Oyun bitti)
         }
         
         // Oyun bitişini yönet
