@@ -3,378 +3,1023 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hümeyra Peşin | Eğitselblog</title>
-    <!-- Tailwind CSS Yükleniyor --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase Kütüphanesi Eklendi --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Inter Font Yükleniyor --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <style>
-        /* Genel fontu Inter olarak ayarla */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb; /* Çok açık gri-mavi tonu */
-        }
-        /* Pastel Tonlar İçin Özel Sınıflar */
-        .pastel-bg-light {
-            background-color: #e3f4f4; /* Açık Mint */
-        }
-        .pastel-accent {
-            background-color: #d1e8e2; /* Yumuşak Yeşil */
-        }
-        .pastel-text {
-            color: #4a7c8c; /* Derin Mavi-Yeşil */
-        }
-        .pastel-border {
-            border-color: #c9e4e4;
-        }
-        /* Mobil uyumluluk: Navigasyonda küçük ekranlar için menü öğeleri arasını açar */
-        @media (max-width: 640px) {
-            .nav-links {
-                display: none; /* Basitlik için mobil menüyü gizledik. Gerçekte hamburger menü eklenir. */
-            }
-        }
-
-        /* --- KAYAN ANİMASYON EFEKTİ --- */
-        /* Sağdan sola kayma animasyonunu tanımlar */
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100px); /* Başlangıçta 100px sağdan başla */
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        /* Animasyon sınıfı: 1 saniyede kayarak gelsin */
-        .animate-slide-in {
-            animation: slideInRight 1s ease-out forwards;
-        }
-    </style>
-</head>
-<body class="text-gray-800 antialiased">
-
-    <!-- Navigasyon (Sabit ve Sade) --><nav class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="#hero" class="text-2xl font-extrabold pastel-text">
-                    Eğitselblog
-                </a>
-                <div class="flex space-x-4">
-                    <a href="#dersler" class="text-sm font-medium hover:text-cyan-600 transition-colors">Dersler</a>
-                    <a href="#basarilar" class="text-sm font-medium hover:text-cyan-600 transition-colors">Başarılar</a>
-                    <a href="#yorumlar" class="text-sm font-medium hover:text-cyan-600 transition-colors">Yorumlar</a>
-                    <a href="#hakkimda" class="text-sm font-medium hover:text-cyan-600 transition-colors">Hakkımda</a>
-                    <a href="#iletisim" class="text-sm font-medium hover:text-cyan-600 transition-colors">İletişim</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Ana Bölüm (Hero) --><section id="hero" class="py-20 md:py-32 bg-white">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between">
-            <!-- Sol: Metin Alanı --><div class="md:w-1/2 mb-10 md:mb-0 text-center md:text-left">
-                <p class="text-xl font-medium text-cyan-500 mb-2">Merhaba, Ben Matematik Öğretmeniniz</p>
-                <h1 class="text-5xl md:text-6xl font-black mb-4 leading-tight pastel-text">
-                    Hümeyra Peşin
-                </h1>
-                <h2 class="text-2xl md:text-3xl font-semibold text-gray-700 mb-6">
-                    <span class="pastel-bg-light px-3 py-1 rounded-full shadow-inner inline-block">Eğitselblog</span> ile Matematik Çok Kolay!
-                </h2>
-                <p class="text-lg text-gray-500 mb-8 max-w-lg mx-auto md:mx-0">
-                    Ortaokul ve Lise seviyesindeki tüm öğrenciler için modern ve sade yöntemlerle matematiği sevdiriyorum. Başarıya giden yol Eğitselblog'tan geçer.
-                </p>
-                <a href="#dersler" class="inline-block px-8 py-3 bg-cyan-500 text-white font-semibold rounded-xl shadow-lg hover:bg-cyan-600 transition-all transform hover:scale-[1.02]">
-                    Dersleri Keşfet
-                </a>
-            </div>
-
-            <!-- Sağ: Görsel Alanı (Placeholder) --><div class="md:w-1/2 flex justify-center animate-slide-in">
-                <!-- Öğretmenin sade bir profil fotoğrafı için yer tutucu -->
-                <div class="w-64 h-64 md:w-80 md:h-80 bg-cyan-100 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-200 border-8 border-white">
-                    <svg class="w-24 h-24 text-cyan-600/70" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="absolute text-xl font-bold text-cyan-700 mt-28">Hümeyra Öğretmen</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Dersler Bölümü --><section id="dersler" class="py-16 md:py-24 bg-gray-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 class="text-4xl font-bold mb-4 pastel-text">Verilen Dersler</h3>
-            <p class="text-lg text-gray-500 mb-12">Her seviyeye özel, öğrenmeyi eğlenceli hale getiren dersler.</p>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                <!-- Ortaokul (Middle School) Kartı --><div class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 border-4 pastel-border">
-                    <div class="w-16 h-16 rounded-full pastel-bg-light flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl" role="img" aria-label="Ortaokul">📚</span>
-                    </div>
-                    <h4 class="text-2xl font-bold mb-3 text-gray-700">Ortaokul (5-8. Sınıf)</h4>
-                    <p class="text-gray-500 mb-4">
-                        Temel matematik becerilerini sağlamlaştırma, LGS'ye hazırlık ve analitik düşünme.
-                    </p>
-                    <ul class="text-left space-y-2 text-gray-600 list-none inline-block">
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Rasyonel Sayılar</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Cebirsel İfadeler</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Oran-Orantı ve Yüzdeler</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Geometri Temelleri</li>
-                    </ul>
-                </div>
-
-                <!-- Lise (High School) Kartı --><div class="bg-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 border-4 pastel-border">
-                    <div class="w-16 h-16 rounded-full pastel-bg-light flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl" role="img" aria-label="Lise">📐</span>
-                    </div>
-                    <h4 class="text-2xl font-bold mb-3 text-gray-700">Lise (9-12. Sınıf)</h4>
-                    <p class="text-gray-500 mb-4">
-                        AYT/TYT hazırlık, ileri düzey fonksiyonlar, limit, türev ve integral konuları.
-                    </p>
-                    <ul class="text-left space-y-2 text-gray-600 list-none inline-block">
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Temel Kavramlar & Kümeler</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Fonksiyonlar & Polinomlar</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> Trigonometri & Logaritma</li>
-                        <li class="flex items-center"><span class="text-cyan-500 mr-2">✓</span> AYT/TYT Hazırlık Kampları</li>
-                    </ul>
-                </div>
-
-            </div>
-        </div>
-    </section>
+    <title>2 Kişilik Blok Oyunu (Supabase)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Başarılar Bölümü (Sayaç Efekti ile) --><section id="basarilar" class="py-16 md:py-24 bg-cyan-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 class="text-4xl font-bold mb-12 pastel-text">Başarılarımızla Gurur Duyuyoruz</h3>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS SDK -->
+    <script type="module">
+        // Supabase kütüphanesini import et
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                <!-- Metrik 1 --><div class="p-6 bg-white rounded-2xl shadow-xl border border-cyan-200">
-                    <div class="text-6xl font-extrabold pastel-text mb-2">
-                        <span class="counter" data-target="250">0</span>+
-                    </div>
-                    <p class="text-xl font-semibold text-gray-700">Başarılı Öğrenci</p>
-                </div>
+        // --- GLOBAL DEĞİŞKENLER VE AYARLAR ---
 
-                <!-- Metrik 2 --><div class="p-6 bg-white rounded-2xl shadow-xl border border-cyan-200">
-                    <div class="text-6xl font-extrabold pastel-text mb-2">
-                        <span class="counter" data-target="95">0</span>%
-                    </div>
-                    <p class="text-xl font-semibold text-gray-700">Sınav Başarı Oranı</p>
-                </div>
+        // Supabase yapılandırmasını al
+        // Canvas ortamında bu değişkenler otomatik olarak sağlanır
+        // Kendi projeniz için YOUR_SUPABASE_URL ve YOUR_SUPABASE_ANON_KEY kısımlarını doldurun
+        const supabaseUrl = typeof __supabase_url !== 'undefined' 
+            ? __supabase_url 
+            : 'https://aqbkbzbovllhbiwnvgtt.supabase.co'; 
+        const supabaseKey = typeof __supabase_key !== 'undefined' 
+            ? __supabase_key 
+            : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxYmtiemJvdmxsaGJpd252Z3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODUyMjcsImV4cCI6MjA3Njc2MTIyN30._pLayMH4lIEj9rns7b-t_-PzKTEHOx6rABZ3k53bwFE';
 
-                <!-- Metrik 3 --><div class="p-6 bg-white rounded-2xl shadow-xl border border-cyan-200">
-                    <div class="text-6xl font-extrabold pastel-text mb-2">
-                        <span class="counter" data-target="10000">0</span>+
-                    </div>
-                    <p class="text-xl font-semibold text-gray-700">Mutlu Ders Saati</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        // Supabase istemcisini başlat
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    <!-- Öğrenci Yorumları Bölümü --><section id="yorumlar" class="py-16 md:py-24 bg-white">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 class="text-4xl font-bold mb-4 pastel-text">Öğrenci Yorumları</h3>
-            <p class="text-lg text-gray-500 mb-12">Öğrencilerimiz Eğitselblog deneyimlerini anlatıyor.</p>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Yorum Kartı 1 --><div class="p-6 pastel-accent rounded-xl shadow-lg hover:shadow-xl transition-shadow border-t-4 border-cyan-500">
-                    <p class="text-xl mb-4 text-gray-700 italic">"Matematik benim için kabustu. Hümeyra Öğretmen'in sade anlatımı sayesinde artık konuları çok daha rahat anlıyorum ve notlarım yükseldi!"</p>
-                    <div class="text-right">
-                        <p class="font-bold text-gray-800">- Melis K.</p>
-                        <p class="text-sm text-gray-500">8. Sınıf Öğrencisi</p>
-                    </div>
-                </div>
-
-                <!-- Yorum Kartı 2 --><div class="p-6 pastel-accent rounded-xl shadow-lg hover:shadow-xl transition-shadow border-t-4 border-cyan-500">
-                    <p class="text-xl mb-4 text-gray-700 italic">"TYT/AYT hazırlık sürecinde bana çok net bir yol haritası çizdi. Özellikle zorlandığım limit ve türev konularını inanılmaz basitleştirdi. Şiddetle tavsiye ederim!"</p>
-                    <div class="text-right">
-                        <p class="font-bold text-gray-800">- Ahmet T.</p>
-                        <p class="text-sm text-gray-500">12. Sınıf Mezun</p>
-                    </div>
-                </div>
-
-                <!-- Yorum Kartı 3 --><div class="p-6 pastel-accent rounded-xl shadow-lg hover:shadow-xl transition-shadow border-t-4 border-cyan-500">
-                    <p class="text-xl mb-4 text-gray-700 italic">"Dersler çok keyifli geçiyor. Her zaman pozitif ve motive edici. Sadece konuyu değil, matematiği nasıl düşüneceğimi de öğrendim. Teşekkürler Eğitselblog!"</p>
-                    <div class="text-right">
-                        <p class="font-bold text-gray-800">- Ece G.</p>
-                        <p class="text-sm text-gray-500">9. Sınıf Öğrencisi</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Hakkımda Bölümü --><section id="hakkimda" class="py-16 md:py-24 pastel-bg-light">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/3 mb-8 md:mb-0 flex justify-center">
-                    <!-- Hakkımda Bölümü Görsel Alanı (Hesap Makinesi İkonu) -->
-                    <div class="w-48 h-48 bg-cyan-500 rounded-2xl flex items-center justify-center p-4 shadow-xl">
-                        <svg class="w-32 h-32 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 5h6m-6 5h6M3 7h1m0 5h1m0 5h1M9 19V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="md:w-2/3 md:pl-12 text-center md:text-left">
-                    <h3 class="text-4xl font-bold mb-4 pastel-text">Hümeyra Öğretmen Kimdir?</h3>
-                    <p class="text-lg text-gray-600 mb-4">
-                        Yıllardır matematik tutkusuyla öğrencilerine rehberlik eden Hümeyra Peşin, matematiği sadece bir ders olarak değil, bir düşünme biçimi olarak öğretiyor.
-                    </p>
-                    <p class="text-gray-500 italic">
-                        "Eğitselblog markası altında, her öğrencinin kendi öğrenme hızına ve stiline uygun, baskıdan uzak bir ortam sunuyorum. Amacım, ezberden uzak, kalıcı öğrenmeyi sağlamak ve öğrencilerin 'yapamam' bariyerini kırmak."
-                    </p>
-                    <ul class="mt-6 space-y-2 text-gray-700 font-medium">
-                        <li class="flex items-center justify-center md:justify-start"><span class="text-cyan-500 mr-3">✔</span> 10+ Yıl Özel Ders Deneyimi</li>
-                        <li class="flex items-center justify-center md:justify-start"><span class="text-cyan-500 mr-3">✔</span> Başarı Odaklı, Sade Metotlar</li>
-                        <li class="flex items-center justify-center md:justify-start"><span class="text-cyan-500 mr-3">✔</span> Pedagojik Formasyon Eğitimi</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- İletişim Bölümü --><section id="iletisim" class="py-16 md:py-24 bg-white">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h3 class="text-4xl font-bold mb-4 pastel-text">İletişime Geçin</h3>
-            <p class="text-lg text-gray-500 mb-12">Dersler hakkında bilgi almak veya deneme dersi planlamak için formu doldurun.</p>
-
-            <div class="max-w-xl mx-auto p-8 pastel-accent rounded-2xl shadow-2xl">
-                <form id="contactForm" class="space-y-4">
-                    <input type="text" id="name" placeholder="Adınız Soyadınız" class="w-full p-3 rounded-lg border pastel-border focus:ring-cyan-500 focus:border-cyan-500 transition-colors" required>
-                    <input type="email" id="email" placeholder="E-posta Adresiniz" class="w-full p-3 rounded-lg border pastel-border focus:ring-cyan-500 focus:border-cyan-500 transition-colors" required>
-                    <input type="tel" id="phone" placeholder="Telefon Numaranız" class="w-full p-3 rounded-lg border pastel-border focus:ring-cyan-500 focus:border-cyan-500 transition-colors">
-                    <textarea id="message" placeholder="Mesajınız (Hangi sınıf ve dersle ilgili?)" rows="4" class="w-full p-3 rounded-lg border pastel-border focus:ring-cyan-500 focus:border-cyan-500 transition-colors" required></textarea>
-                    <button type="submit" id="submitButton" class="w-full px-4 py-3 bg-cyan-600 text-white font-semibold rounded-lg shadow-md hover:bg-cyan-700 transition-colors">
-                        Mesaj Gönder
-                    </button>
-                    <!-- Form gönderme başarısını gösterecek basit bir mesaj kutusu --><div id="message-status" class="hidden mt-4 p-3 rounded-lg font-medium">
-                        <!-- Durum mesajı buraya eklenecek -->
-                    </div>
-                </form>
-            </div>
-            
-            <p class="mt-8 text-gray-500">
-                <span class="font-semibold">Telefon:</span> 0 (5XX) XXX XX XX | 
-                <span class="font-semibold">E-posta:</span> iletisim@egitselblog.com
-            </p>
-        </div>
-    </section>
-
-    <!-- Footer --><footer class="py-8 pastel-text border-t border-cyan-100">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-            <p>&copy; 2025 Eğitselblog - Hümeyra Peşin. Tüm Hakları Saklıdır.</p>
-            <p class="mt-1">Modern, Sade ve Başarılı Matematik Eğitimi.</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript for Supabase Integration, Counter Animation --><script>
-        // Supabase Ayarları
-        const SUPABASE_URL = 'https://zsekjzvevzhjjygovhtn.supabase.co'; 
-        // Anon Anahtar, kullanıcı tarafından sağlanan API anahtarıyla güncellendi.
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzZWtqenZldnpoamp5Z292aHRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5NTM5MTAsImV4cCI6MjA3NjUyOTkxMH0.OcB3dcxf1GQSKgDSjUVW2o1lCUAkBM_kQnPlpoS730o'; 
+        let currentUserId = null;
+        let currentUsername = "";
+        let currentGameId = null;
+        let playerNumber = null; // 1 veya 2
         
-        // Supabase İstemcisini Başlat
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Supabase Realtime aboneliklerini tutmak için
+        let gameSubscription = null; 
+        let lobbySubscription = null;
+        let inviteSubscription = null;
 
-        // Supabase ile Form Gönderme Fonksiyonu
-        async function submitForm(e) {
-            e.preventDefault();
+        // Oyun tahtası ve parçalar için referanslar
+        const gameBoardElement = document.getElementById('game-board');
+        const piecesContainer = document.getElementById('pieces-container');
+        
+        let selectedPiece = null; // { index: 0, shape: [[1,1], [1,0]] }
+        let currentBoardState = [];
+        let currentPiecesState = [];
 
-            // Tüm anahtarlar ayarlandığı için placeholder kontrolü kaldırıldı.
+        // Supabase tablo adları (Firestore koleksiyon yolları yerine)
+        const USERS_TABLE = 'users';
+        const GAMES_TABLE = 'games';
+        const INVITES_TABLE = 'invites';
 
-            const form = e.target;
-            const messageStatus = document.getElementById('message-status');
-            const submitButton = document.getElementById('submitButton');
+        // --- BLOK PARÇA TANIMLARI ---
+        // (Bu kısım Firebase versiyonuyla aynı)
+        const PIECES = [
+            // 1x1
+            { shape: [[1]], color: 'bg-red-500' },
+            // 1x2
+            { shape: [[1, 1]], color: 'bg-blue-500' },
+            // 2x1
+            { shape: [[1], [1]], color: 'bg-blue-500' },
+            // 1x3
+            { shape: [[1, 1, 1]], color: 'bg-green-500' },
+            // 3x1
+            { shape: [[1], [1], [1]], color: 'bg-green-500' },
+            // 2x2 Kare
+            { shape: [[1, 1], [1, 1]], color: 'bg-yellow-500' },
+            // L (3)
+            { shape: [[1, 0], [1, 1]], color: 'bg-purple-500' },
+            { shape: [[1, 1], [1, 0]], color: 'bg-purple-500' },
+            { shape: [[1, 1], [0, 1]], color: 'bg-purple-500' },
+            { shape: [[0, 1], [1, 1]], color: 'bg-purple-500' },
+            // T (4)
+            { shape: [[1, 1, 1], [0, 1, 0]], color: 'bg-indigo-500' },
+            { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-indigo-500' },
+            { shape: [[1, 0], [1, 1], [1, 0]], color: 'bg-indigo-500' },
+            { shape: [[0, 1], [1, 1], [0, 1]], color: 'bg-indigo-500' },
+            // 1x4
+            { shape: [[1, 1, 1, 1]], color: 'bg-cyan-500' },
+            // 4x1
+            { shape: [[1], [1], [1], [1]], color: 'bg-cyan-500' },
+            // 3x3 Kare
+            { shape: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], color: 'bg-orange-500' }
+        ];
 
-            // Durum ve buton güncellemesi
-            submitButton.disabled = true;
-            submitButton.textContent = 'Gönderiliyor...';
-            messageStatus.classList.add('hidden');
-            messageStatus.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+        // --- YARDIMCI FONKSİYONLAR ---
+        // (Bu kısım Firebase versiyonuyla aynı)
 
-            // Form verilerini toplama
-            const data = {
-                name: form.querySelector('#name').value,
-                email: form.querySelector('#email').value,
-                phone: form.querySelector('#phone').value || null, // Telefon alanı boş bırakılabilir
-                message: form.querySelector('#message').value,
-            };
+        // Farklı ekranları göster/gizle
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // Özel mesaj kutusu
+        function showMessage(title, message) {
+            document.getElementById('message-title').textContent = title;
+            document.getElementById('message-body').textContent = message;
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+        
+        document.getElementById('message-close-btn').addEventListener('click', () => {
+            document.getElementById('message-modal').classList.add('hidden');
+        });
+
+        // 3 rastgele yeni parça oluştur
+        function generateNewPieces() {
+            const newPieces = [];
+            for (let i = 0; i < 3; i++) {
+                const randomPiece = PIECES[Math.floor(Math.random() * PIECES.length)];
+                newPieces.push(randomPiece);
+            }
+            return newPieces;
+        }
+
+        // 10x10 boş bir tahta oluşturur
+        function createEmptyBoard() {
+            return Array(10).fill(0).map(() => Array(10).fill(0));
+        }
+
+        // --- OYUN GİRİŞ VE LOBİ YÖNETİMİ (SUPABASE) ---
+
+        // Kullanıcı girişi
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const usernameInput = document.getElementById('username-input');
+            const username = usernameInput.value.trim();
+            if (username.length < 3) {
+                showMessage('Hata', 'Kullanıcı adı en az 3 karakter olmalıdır.');
+                return;
+            }
+            if (!currentUserId) {
+                showMessage('Hata', 'Kullanıcı kimliği alınamadı. Lütfen bekleyin.');
+                return;
+            }
+            
+            currentUsername = username;
+            
+            try {
+                // Kullanıcıyı 'users' tablosuna ekle veya güncelle (UPSERT)
+                // 'id' alanı auth.users.id'ye bağlı olmalı
+                const { error } = await supabase
+                    .from(USERS_TABLE)
+                    .upsert({ 
+                        id: currentUserId, // PK (auth.users.id ile aynı)
+                        name: currentUsername, 
+                        is_online: true, 
+                        timestamp: new Date().toISOString() // serverTimestamp yerine
+                    });
+
+                if (error) throw error;
+                
+                // Lobiyi göster
+                document.getElementById('user-id-display').textContent = `Kullanıcı ID: ${currentUserId}`;
+                showView('lobby-screen');
+                setupLobbyListeners();
+
+            } catch (error) {
+                console.error("Giriş hatası:", error);
+                showMessage('Giriş Hatası', 'Sunucuya bağlanırken bir hata oluştu.');
+            }
+        });
+
+        // Lobi dinleyicilerini (Supabase Realtime) ayarla
+        async function setupLobbyListeners() {
+            // Önce mevcut kullanıcıları bir kez çek
+            await fetchLobbyUsers();
+
+            // Aktif kullanıcıları (users tablosu) dinle
+            if (lobbySubscription) lobbySubscription.unsubscribe(); // Önceki aboneliği kaldır
+            lobbySubscription = supabase
+                .channel('public:users')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: USERS_TABLE }, 
+                    (payload) => {
+                        console.log('Users tablosunda değişiklik:', payload);
+                        // Değişiklik olduğunda listeyi yeniden çek
+                        fetchLobbyUsers();
+                    }
+                )
+                .subscribe();
+
+            // Gelen davetleri dinle (sadece bana gelen davetler)
+            if (inviteSubscription) inviteSubscription.unsubscribe();
+            inviteSubscription = supabase
+                .channel(`public:invites:to_id=eq.${currentUserId}`)
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: INVITES_TABLE, filter: `to_id=eq.${currentUserId}` },
+                    (payload) => {
+                        console.log('Davet değişikliği:', payload);
+                        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                            const invite = payload.new;
+                            document.getElementById('invite-sender-name').textContent = invite.from_name;
+                            document.getElementById('invite-data').dataset.inviterId = invite.from_id;
+                            document.getElementById('invite-data').dataset.inviterName = invite.from_name;
+                            document.getElementById('invite-modal').classList.remove('hidden');
+                        } else if (payload.eventType === 'DELETE') {
+                            document.getElementById('invite-modal').classList.add('hidden');
+                        }
+                    }
+                )
+                .subscribe();
+            
+            // Başlangıçta bekleyen davet var mı diye kontrol et
+            checkPendingInvite();
+        }
+
+        // Lobi kullanıcılarını çeken yardımcı fonksiyon
+        async function fetchLobbyUsers() {
+            const { data: users, error } = await supabase
+                .from(USERS_TABLE)
+                .select('id, name')
+                .eq('is_online', true)
+                .neq('id', currentUserId); // Kendim hariç
+
+            if (error) {
+                console.error('Kullanıcıları çekerken hata:', error);
+                return;
+            }
+            
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = ''; // Listeyi temizle
+            if (users && users.length > 0) {
+                users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center p-3 bg-gray-700 rounded-lg';
+                    li.innerHTML = `
+                        <span class="font-medium">${user.name}</span>
+                        <button data-id="${user.id}" data-name="${user.name}" class="invite-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md transition-colors">
+                            Davet Et
+                        </button>
+                    `;
+                    userList.appendChild(li);
+                });
+                
+                // Davet et butonlarına tıklama olayı ekle
+                document.querySelectorAll('.invite-btn').forEach(button => {
+                    button.addEventListener('click', handleSendInvite);
+                });
+            } else {
+                 userList.innerHTML = '<li class="text-center text-gray-400">Aktif oyuncu bulunamadı.</li>';
+            }
+        }
+        
+        // Bekleyen daveti kontrol et
+        async function checkPendingInvite() {
+             const { data, error } = await supabase
+                .from(INVITES_TABLE)
+                .select('*')
+                .eq('to_id', currentUserId) // PK (veya hedeflenen ID)
+                .single();
+                
+            if (data) {
+                document.getElementById('invite-sender-name').textContent = data.from_name;
+                document.getElementById('invite-data').dataset.inviterId = data.from_id;
+                document.getElementById('invite-data').dataset.inviterName = data.from_name;
+                document.getElementById('invite-modal').classList.remove('hidden');
+            }
+        }
+
+        // Davet gönderme
+        async function handleSendInvite(e) {
+            const targetId = e.target.dataset.id;
+            const targetName = e.target.dataset.name;
+            
+            try {
+                // Rakibin zaten bir daveti var mı? (PK 'to_id' varsayımıyla)
+                const { data } = await supabase
+                    .from(INVITES_TABLE)
+                    .select('to_id')
+                    .eq('to_id', targetId)
+                    .single();
+
+                if (data) {
+                    showMessage('Bekle', `${targetName} kullanıcısının zaten bekleyen bir daveti var.`);
+                    return;
+                }
+
+                // Kendi bekleyen davetimizi silelim (varsa)
+                await supabase.from(INVITES_TABLE).delete().eq('to_id', currentUserId);
+
+                // Davet gönder (PK 'to_id')
+                const { error: insertError } = await supabase
+                    .from(INVITES_TABLE)
+                    .insert({
+                        to_id: targetId, // Davet edilen (PK)
+                        from_id: currentUserId,
+                        from_name: currentUsername,
+                        timestamp: new Date().toISOString()
+                    });
+                
+                if (insertError) throw insertError;
+                
+                showMessage('Davet Gönderildi', `${targetName} kullanıcısına davet gönderildi. Cevap bekleniyor...`);
+                
+                // Oyunun kabul edilmesini dinle
+                listenForGameAcceptance(targetId);
+
+            } catch (error) {
+                console.error("Davet gönderme hatası:", error);
+                showMessage('Hata', 'Davet gönderilemedi.');
+            }
+        }
+
+        // Daveti kabul etme
+        document.getElementById('accept-invite-btn').addEventListener('click', async () => {
+            const inviterId = document.getElementById('invite-data').dataset.inviterId;
+            const inviterName = document.getElementById('invite-data').dataset.inviterName;
+            
+            const gameId = `${inviterId}_${currentUserId}`; // Sabit bir oyun ID'si
+            
+            try {
+                // Yeni oyun dökümanı oluştur
+                const { error: gameError } = await supabase
+                    .from(GAMES_TABLE)
+                    .insert({
+                        id: gameId, // PK
+                        player1_id: inviterId,
+                        player1_name: inviterName,
+                        player1_score: 0,
+                        player1_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla
+                        
+                        player2_id: currentUserId,
+                        player2_name: currentUsername,
+                        player2_score: 0,
+                        player2_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla
+                        
+                        board: JSON.stringify(createEmptyBoard()), // JSONB olarak sakla
+                        turn: inviterId, // İlk sıra davet edende
+                        status: 'active', // 'active', 'finished'
+                        winner: null,
+                        last_move_by: null
+                    });
+                
+                if (gameError) throw gameError;
+
+                // Daveti sil (PK 'to_id' idi)
+                const { error: deleteError } = await supabase
+                    .from(INVITES_TABLE)
+                    .delete()
+                    .eq('to_id', currentUserId);
+                
+                if (deleteError) throw deleteError;
+
+                // Oyunu başlat (Oyuncu 2 olarak)
+                startGame(gameId, 2);
+                
+            } catch (error) {
+                console.error("Davet kabul etme hatası:", error);
+                showMessage('Hata', 'Oyuna katılırken bir sorun oluştu.');
+            }
+        });
+
+        // Daveti reddetme
+        document.getElementById('decline-invite-btn').addEventListener('click', async () => {
+            try {
+                await supabase.from(INVITES_TABLE).delete().eq('to_id', currentUserId);
+            } catch (error) {
+                console.error("Davet reddetme hatası:", error);
+            }
+            document.getElementById('invite-modal').classList.add('hidden');
+        });
+
+        // Davet edenin, oyunun kabul edilmesini beklemesi
+        function listenForGameAcceptance(targetId) {
+            const gameId = `${currentUserId}_${targetId}`;
+            
+            const acceptanceSubscription = supabase
+                .channel(`public:games:id=eq.${gameId}`)
+                .on('postgres_changes', 
+                    // Sadece bu ID'li oyun EKLENDİĞİNDE tetiklen
+                    { event: 'INSERT', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` },
+                    (payload) => {
+                        if (payload.new.status === 'active') {
+                            acceptanceSubscription.unsubscribe(); // Dinleyiciyi kaldır
+                            startGame(gameId, 1); // Oyunu başlat (Oyuncu 1 olarak)
+                        }
+                    }
+                )
+                .subscribe();
+            
+            // Belli bir süre sonra zaman aşımına uğrat
+            setTimeout(() => acceptanceSubscription.unsubscribe(), 60000); // 1 dakika bekle
+        }
+
+        // --- OYUN MANTIĞI (SUPABASE) ---
+        
+        // Oyunu başlat
+        async function startGame(gameId, pNum) {
+            currentGameId = gameId;
+            playerNumber = pNum;
+            
+            // Lobi dinleyicilerini durdur
+            if (lobbySubscription) lobbySubscription.unsubscribe();
+            if (inviteSubscription) inviteSubscription.unsubscribe();
+            lobbySubscription = null;
+            inviteSubscription = null;
+            
+            // Oyun ekranını göster
+            showView('game-screen');
+            
+            // Oyunu dinlemeye başla (UPDATE ve DELETE olayları)
+            if (gameSubscription) gameSubscription.unsubscribe();
+            gameSubscription = supabase
+                .channel(`public:games:id=eq.${gameId}`)
+                .on('postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` },
+                    (payload) => {
+                        const game = payload.new;
+                        updateGameUI(game); // UI'ı güncelle
+                        
+                        if (game.status === 'finished') {
+                            handleGameOver(game);
+                        }
+                    }
+                )
+                .on('postgres_changes',
+                    { event: 'DELETE', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` },
+                    (payload) => {
+                        stopGame('Rakip oyundan ayrıldı (oyun silindi).');
+                    }
+                )
+                .subscribe();
+            
+            // İlk oyun durumunu manuel olarak çek (sayfa yenilenmesi veya ilk katılım için)
+            await fetchInitialGameState(gameId);
+        }
+        
+        // İlk oyun durumunu çek
+        async function fetchInitialGameState(gameId) {
+             const { data: game, error } = await supabase
+                .from(GAMES_TABLE)
+                .select('*')
+                .eq('id', gameId)
+                .single();
+            
+            if (error) {
+                console.error('Oyun durumu alınamadı:', error);
+                stopGame('Oyun durumu alınamadı.');
+            } else if (game) {
+                updateGameUI(game);
+            }
+        }
+
+        // Oyunu durdur
+        function stopGame(message) {
+            if (gameSubscription) gameSubscription.unsubscribe();
+            gameSubscription = null;
+            currentGameId = null;
+            playerNumber = null;
+            selectedPiece = null;
+            
+            showMessage('Oyun Bitti', message);
+            showView('lobby-screen'); // Lobiye dön
+            setupLobbyListeners(); // Lobi dinleyicilerini tekrar başlat
+        }
+
+        // Oyun Arayüzünü Güncelle (Firebase ile aynı)
+        function updateGameUI(game) {
+            // Skoları ve isimleri güncelle
+            const p1ScoreEl = document.getElementById('player1-score');
+            const p2ScoreEl = document.getElementById('player2-score');
+            
+            p1ScoreEl.textContent = `${game.player1_name} (P1): ${game.player1_score}`;
+            p2ScoreEl.textContent = `${game.player2_name} (P2): ${game.player2_score}`;
+            
+            // Sıra kimde?
+            const turnInfo = document.getElementById('turn-info');
+            if (game.turn === currentUserId) {
+                turnInfo.textContent = "Sıra Sende!";
+                turnInfo.className = "text-center text-2xl font-bold text-green-400 mb-4";
+            } else {
+                const opponentName = (playerNumber === 1) ? game.player2_name : game.player1_name;
+                turnInfo.textContent = `Sıra ${opponentName}'da...`;
+                turnInfo.className = "text-center text-2xl font-bold text-yellow-400 mb-4";
+            }
+            
+            // Tahtayı çiz (JSONB'den gelen JSON string'i parse et)
+            currentBoardState = JSON.parse(game.board);
+            renderBoard(currentBoardState);
+            
+            // Parçaları çiz (JSONB'den gelen JSON string'i parse et)
+            const myPiecesKey = `player${playerNumber}_pieces`;
+            currentPiecesState = JSON.parse(game[myPiecesKey]);
+            renderPieces(currentPiecesState, game.turn === currentUserId);
+        }
+
+        // Oyun tahtasını HTML'e dök (Firebase ile aynı)
+        function renderBoard(board) {
+            gameBoardElement.innerHTML = '';
+            board.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    const cellEl = document.createElement('div');
+                    cellEl.className = 'w-8 h-8 md:w-10 md:h-10 border border-gray-600 flex items-center justify-center';
+                    cellEl.dataset.x = x;
+                    cellEl.dataset.y = y;
+                    
+                    if (cell === 1) { // Dolu hücre
+                        cellEl.classList.add('bg-gray-400');
+                    } else { // Boş hücre
+                        cellEl.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                    }
+                    
+                    // Hücreye tıklama olayı
+                    cellEl.addEventListener('click', () => handleCellClick(x, y));
+                    
+                    // Parçayı yerleştirmeden önce önizleme (hover)
+                    cellEl.addEventListener('mouseenter', () => showPlacementPreview(x, y, true));
+                    cellEl.addEventListener('mouseleave', () => showPlacementPreview(x, y, false));
+                    
+                    gameBoardElement.appendChild(cellEl);
+                });
+            });
+        }
+        
+        // Kullanıcının parçalarını HTML'e dök (Firebase ile aynı)
+        function renderPieces(pieces, isMyTurn) {
+            piecesContainer.innerHTML = '';
+            pieces.forEach((piece, index) => {
+                if (piece === null) { // Kullanılmış parça
+                    const pieceEl = document.createElement('div');
+                    pieceEl.className = 'w-24 h-24 m-2 bg-gray-900 rounded-lg opacity-50';
+                    piecesContainer.appendChild(pieceEl);
+                    return;
+                }
+                
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'w-24 h-24 m-2 p-2 flex flex-col items-center justify-center bg-gray-700 rounded-lg cursor-pointer transition-all';
+                pieceEl.dataset.index = index;
+                
+                if (selectedPiece && selectedPiece.index === index) {
+                    pieceEl.classList.add('ring-4', 'ring-blue-500', 'scale-105');
+                }
+                
+                if (!isMyTurn) {
+                    pieceEl.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    pieceEl.addEventListener('click', () => {
+                        selectedPiece = { index: index, shape: piece.shape, color: piece.color };
+                        // Arayüzü anında güncelle (renderPieces tekrar çağrılacak)
+                        renderPieces(pieces, isMyTurn); 
+                    });
+                }
+                
+                // Parçanın küçük bir görselini oluştur
+                piece.shape.forEach(row => {
+                    const rowEl = document.createElement('div');
+                    rowEl.className = 'flex';
+                    row.forEach(cell => {
+                        const cellEl = document.createElement('div');
+                        cellEl.className = 'w-4 h-4';
+                        if (cell === 1) {
+                            cellEl.classList.add(piece.color);
+                        }
+                        rowEl.appendChild(cellEl);
+                    });
+                    pieceEl.appendChild(rowEl);
+                });
+                
+                piecesContainer.appendChild(pieceEl);
+            });
+        }
+        
+        // Parça yerleştirme önizlemesi (Firebase ile aynı)
+        function showPlacementPreview(startX, startY, show) {
+            if (!selectedPiece || !gameBoardElement) return;
+
+            const { shape } = selectedPiece;
+            const isValid = checkValidPlacement(shape, startX, startY, currentBoardState);
+            
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x] === 1) {
+                        const boardX = startX + x;
+                        const boardY = startY + y;
+                        const cell = gameBoardElement.querySelector(`[data-x="${boardX}"][data-y="${boardY}"]`);
+                        if (cell) {
+                            if (show) {
+                                cell.classList.add(isValid ? 'bg-green-300' : 'bg-red-300', 'opacity-50');
+                            } else {
+                                // Sadece hover sınıflarını kaldır, doluysa kendi rengini koru
+                                cell.classList.remove('bg-green-300', 'bg-red-300', 'opacity-50');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tahtaya tıklamayı yönet (Supabase update)
+        async function handleCellClick(x, y) {
+            // Yarış koşullarını (race conditions) önlemek için önce mevcut durumu al
+            const { data: game, error: fetchError } = await supabase
+                .from(GAMES_TABLE)
+                .select('*')
+                .eq('id', currentGameId)
+                .single();
+
+            if (fetchError || !game) {
+                console.error("Oyun durumu alınamadı:", fetchError);
+                return;
+            }
+
+            // Sıra bende mi ve parça seçili mi?
+            if (game.turn !== currentUserId || !selectedPiece) {
+                return;
+            }
+            
+            const board = JSON.parse(game.board);
+            
+            // Yerleştirme geçerli mi?
+            if (checkValidPlacement(selectedPiece.shape, x, y, board)) {
+                // 1. Parçayı tahtaya yerleştir
+                const { newBoard, cellsPlaced } = placePiece(selectedPiece.shape, x, y, board);
+                
+                // 2. Çizgileri kontrol et ve temizle
+                const { clearedBoard, clearedLinesCount } = clearLines(newBoard);
+                
+                // 3. Puanı hesapla (Firebase ile aynı mantık)
+                let scoreGained = cellsPlaced + (clearedLinesCount * 10);
+                if (clearedLinesCount > 1) scoreGained += clearedLinesCount * 5; // Bonus
+                
+                const myScoreKey = `player${playerNumber}_score`;
+                const myPiecesKey = `player${playerNumber}_pieces`;
+                const opponentPiecesKey = `player${playerNumber === 1 ? 2 : 1}_pieces`;
+                const opponentId = (playerNumber === 1) ? game.player2_id : game.player1_id;
+
+                let myNewScore = game[myScoreKey] + scoreGained;
+                
+                // 4. Kullandığım parçayı güncelle
+                let myNewPieces = JSON.parse(game[myPiecesKey]);
+                myNewPieces[selectedPiece.index] = null; // Parçayı kullanıldı olarak işaretle
+                
+                // 5. Tüm parçalar kullanıldıysa yenilerini ver
+                if (myNewPieces.every(p => p === null)) {
+                    myNewPieces = generateNewPieces();
+                }
+                
+                // 6. Rakip için oyun bitti mi kontrol et
+                const opponentPieces = JSON.parse(game[opponentPiecesKey]);
+                const isGameOver = checkGameOver(opponentPieces, clearedBoard);
+                
+                let newStatus = 'active';
+                let winnerId = null;
+                
+                if (isGameOver) {
+                    newStatus = 'finished';
+                    const opponentScoreKey = `player${playerNumber === 1 ? 2 : 1}_score`;
+                    const opponentScore = game[opponentScoreKey];
+                    
+                    if (myNewScore > opponentScore) {
+                        winnerId = currentUserId;
+                    } else if (opponentScore > myNewScore) {
+                        winnerId = opponentId;
+                    } else {
+                        winnerId = 'draw'; // Berabere
+                    }
+                }
+
+                // 7. Supabase'i güncelle
+                try {
+                    const { error: updateError } = await supabase
+                        .from(GAMES_TABLE)
+                        .update({
+                            board: JSON.stringify(clearedBoard),
+                            [myScoreKey]: myNewScore,
+                            [myPiecesKey]: JSON.stringify(myNewPieces),
+                            turn: opponentId, // Sırayı rakibe ver
+                            status: newStatus,
+                            winner: winnerId,
+                            last_move_by: currentUserId
+                        })
+                        .eq('id', currentGameId); // Sadece bu oyunu güncelle
+
+                    if (updateError) throw updateError;
+                    
+                    selectedPiece = null; // Seçimi temizle
+                    
+                } catch (error) {
+                    console.error("Hamle güncelleme hatası:", error);
+                    showMessage('Hata', 'Hamleniz sunucuya iletilemedi.');
+                }
+                
+            } else {
+                showMessage('Geçersiz Hamle', 'Parçayı buraya yerleştiremezsiniz.');
+            }
+        }
+        
+        // --- GERİ KALAN OYUN MANTIĞI FONKSİYONLARI (Firebase ile %100 aynı) ---
+        
+        // Parçanın (x, y) konumuna yerleştirilip yerleştirilemeyeceğini kontrol et
+        function checkValidPlacement(shape, startX, startY, board) {
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x] === 1) { // Parçanın bir hücresi
+                        const boardX = startX + x;
+                        const boardY = startY + y;
+                        
+                        // Tahta sınırları dışı
+                        if (boardY >= board.length || boardX >= board[0].length) {
+                            return false;
+                        }
+                        
+                        // Başka bir parçanın üzeri
+                        if (board[boardY][boardX] === 1) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Parçayı tahtaya yerleştir (kopyasını döndür)
+        function placePiece(shape, startX, startY, board) {
+            let cellsPlaced = 0;
+            const newBoard = board.map(row => [...row]); // Deep copy
+            
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x] === 1) {
+                        newBoard[startY + y][startX + x] = 1;
+                        cellsPlaced++;
+                    }
+                }
+            }
+            return { newBoard, cellsPlaced };
+        }
+
+        // Dolu satırları ve sütunları temizle
+        function clearLines(board) {
+            let newBoard = board.map(row => [...row]);
+            let clearedLinesCount = 0;
+            
+            const rowsToClear = [];
+            const colsToClear = [];
+            
+            // Satırları kontrol et
+            for (let y = 0; y < 10; y++) {
+                if (newBoard[y].every(cell => cell === 1)) {
+                    rowsToClear.push(y);
+                    clearedLinesCount++;
+                }
+            }
+            
+            // Sütunları kontrol et
+            for (let x = 0; x < 10; x++) {
+                let colFull = true;
+                for (let y = 0; y < 10; y++) {
+                    if (newBoard[y][x] === 0) {
+                        colFull = false;
+                        break;
+                    }
+                }
+                if (colFull) {
+                    colsToClear.push(x);
+                    clearedLinesCount++;
+                }
+            }
+            
+            // Temizle
+            rowsToClear.forEach(y => {
+                for (let x = 0; x < 10; x++) newBoard[y][x] = 0;
+            });
+            colsToClear.forEach(x => {
+                for (let y = 0; y < 10; y++) newBoard[y][x] = 0;
+            });
+            
+            return { clearedBoard: newBoard, clearedLinesCount };
+        }
+        
+        // Oyuncunun elindeki parçalarla hamle yapıp yapamayacağını kontrol et
+        function checkGameOver(pieces, board) {
+            // Eğer tüm parçalar null ise (yeni dağıtılacaksa) oyun bitmez
+            if (pieces.every(p => p === null)) return false;
+            
+            for (const piece of pieces) {
+                if (piece === null) continue; // Kullanılmış parçayı atla
+                
+                // Tahtadaki her olası konumu dene
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        if (checkValidPlacement(piece.shape, x, y, board)) {
+                            return false; // En az 1 geçerli hamle bulundu!
+                        }
+                    }
+                }
+            }
+            
+            return true; // Hiç geçerli hamle bulunamadı
+        }
+        
+        // Oyun bitişini yönet
+        function handleGameOver(game) {
+            if (gameSubscription) gameSubscription.unsubscribe(); // Dinlemeyi durdur
+            gameSubscription = null;
+            
+            let title = "Oyun Bitti!";
+            let message = "";
+            
+            if (game.winner === 'draw') {
+                title = "Berabere!";
+                message = `Oyun berabere bitti. Skorlar eşit: ${game.player1_score}`;
+            } else {
+                const winnerName = (game.winner === game.player1_id) ? game.player1_name : game.player2_name;
+                message = `Kazanan: ${winnerName}! \n\nSkor: ${game.player1_score} - ${game.player2_score}`;
+            }
+            
+            document.getElementById('game-over-title').textContent = title;
+            document.getElementById('game-over-body').textContent = message;
+            document.getElementById('game-over-modal').classList.remove('hidden');
+        }
+
+        // Lobiye dön
+        document.getElementById('game-over-close-btn').addEventListener('click', () => {
+            document.getElementById('game-over-modal').classList.add('hidden');
+            stopGame('Oyun sona erdi.');
+        });
+        
+        // Pes et
+        document.getElementById('forfeit-btn').addEventListener('click', async () => {
+            if (!currentGameId || !playerNumber) return;
+            
+            // Rakip ID'sini almak için mevcut durumu çek
+            const { data: game, error: fetchError } = await supabase
+                .from(GAMES_TABLE)
+                .select('player1_id, player2_id')
+                .eq('id', currentGameId)
+                .single();
+            
+            if (fetchError || !game) return;
+
+            const opponentId = (playerNumber === 1) ? game.player2_id : game.player1_id;
 
             try {
-                // Veriyi Supabase'e ekle
-                const { error } = await supabase
-                    .from('egitselblogcontac') // Tablo adı, görselde görünen isme göre güncellendi.
-                    .insert([data]);
-
-                if (error) {
-                    console.error('Supabase Ekleme Hatası:', error);
-                    messageStatus.textContent = 'Hata oluştu! Mesajınız gönderilemedi. Hata: ' + error.message;
-                    messageStatus.classList.add('bg-red-100', 'text-red-700');
-                } else {
-                    messageStatus.textContent = 'Mesajınız başarıyla gönderildi! Hümeyra Öğretmen en kısa sürede size dönüş yapacaktır.';
-                    messageStatus.classList.add('bg-green-100', 'text-green-700');
-                    form.reset();
-                }
-            } catch (err) {
-                console.error('Form Gönderim Hatası:', err);
-                messageStatus.textContent = 'Bir bağlantı hatası oluştu. Lütfen daha sonra tekrar deneyin.';
-                messageStatus.classList.add('bg-red-100', 'text-red-700');
-            } finally {
-                // Son işlemleri yap
-                submitButton.disabled = false;
-                submitButton.textContent = 'Mesaj Gönder';
-                messageStatus.classList.remove('hidden');
+                const { error: updateError } = await supabase
+                    .from(GAMES_TABLE)
+                    .update({
+                        status: 'finished',
+                        winner: opponentId, // Rakip kazanır
+                        last_move_by: currentUserId
+                    })
+                    .eq('id', currentGameId);
+                
+                if (updateError) throw updateError;
+                // Realtime dinleyicisi otomatik olarak handleGameOver'ı tetikleyecektir.
+            } catch (error) {
+                console.error("Pes etme hatası:", error);
+                stopGame('Pes ederken bir hata oluştu.');
             }
-        }
-
-        // Form dinleyicisini Supabase fonksiyonuna bağla
-        document.getElementById('contactForm').addEventListener('submit', submitForm);
+        });
 
 
-        // Sayaç Animasyonu: Intersection Observer kullanılarak görünür olduğunda tetiklenir.
-        const counterSection = document.getElementById('basarilar');
-        const counters = document.querySelectorAll('.counter');
-        const speed = 200; // Sayacın bitiş hızı (artış hızı)
+        // --- UYGULAMA BAŞLANGICI (SUPABASE AUTH) ---
         
-        const startCounting = () => {
-            counters.forEach(counter => {
-                const updateCount = () => {
-                    const target = +counter.getAttribute('data-target');
-                    const count = +counter.innerText;
-                    
-                    const increment = target / speed;
+        // Sayfa yüklendiğinde
+        window.onload = async () => {
+            // Supabase ile anonim olarak giriş yapmayı dene
+            // (Supabase projenizde 'Enable Email Signup' kapalıyken
+            // anonim girişler 'Enable Anonymous Sign-ins' ile açılmalıdır)
+            const { data: { user }, error } = await supabase.auth.signInAnonymously();
 
-                    if (count < target) {
-                        counter.innerText = Math.ceil(count + increment);
-                        requestAnimationFrame(updateCount);
-                    } else {
-                        counter.innerText = target;
-                    }
-                };
-                updateCount();
+            if (error) {
+                console.error("Supabase kimlik doğrulama hatası:", error);
+                showMessage('Bağlantı Hatası', 'Kimlik doğrulama sunucusuna bağlanılamadı. Lütfen Supabase ayarlarınızı kontrol edin.');
+            } else if (user) {
+                console.log("Giriş yapıldı, UID:", user.id);
+                currentUserId = user.id;
+                // Giriş ekranını göster
+                showView('login-screen');
+            }
+            
+            // Kullanıcı online durumunu sayfa kapanırken güncelle
+            window.addEventListener('beforeunload', async () => {
+                if (currentUserId) {
+                    await supabase
+                        .from(USERS_TABLE)
+                        .update({ is_online: false, timestamp: new Date().toISOString() })
+                        .eq('id', currentUserId);
+                }
             });
         };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    counters.forEach(counter => counter.innerText = '0');
-                    startCounting();
-                } else {
-                    counters.forEach(counter => counter.innerText = '0');
-                }
-            });
-        }, {
-            threshold: 0.5
-        });
-
-        if (counterSection) {
-            observer.observe(counterSection);
-        }
-        
     </script>
+    
+    <!-- STYLE (Firebase ile aynı) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        /* Ekranların tam boyutta olmasını ve geçiş yapmasını sağlar */
+        .view {
+            min-height: 100vh;
+            width: 100%;
+        }
+        /* Oyun tahtası grid'i */
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            width: 320px; /* 10 * 32px */
+            height: 320px; /* 10 * 32px */
+            border: 2px solid #4a5568; /* gray-700 */
+        }
+        @media (min-width: 768px) {
+            #game-board {
+                width: 400px; /* 10 * 40px */
+                height: 400px; /* 10 * 40px */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+
+    <!-- HTML İÇERİĞİ (Firebase ile aynı) -->
+
+    <!-- 1. Giriş Ekranı -->
+    <div id="login-screen" class="view flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-gray-800 p-8 rounded-xl shadow-2xl">
+            <h1 class="text-3xl font-bold text-center mb-6">Blok Savaşı</h1>
+            <p class="text-center text-gray-400 mb-6">Oyuna girmek için bir kullanıcı adı belirleyin.</p>
+            <input type="text" id="username-input" placeholder="Kullanıcı Adı" class="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" maxlength="15">
+            <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg">
+                Oyuna Gir
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Lobi Ekranı -->
+    <div id="lobby-screen" class="view hidden flex-col items-center justify-start p-4 md:p-8">
+        <h1 class="text-3xl font-bold text-center mb-6">Lobi</h1>
+        <p id="user-id-display" class="text-sm text-gray-500 mb-4 bg-gray-800 px-3 py-1 rounded-full"></p>
+        <div class="w-full max-w-md bg-gray-800 p-6 rounded-xl shadow-2xl">
+            <h2 class="text-xl font-semibold mb-4">Aktif Oyuncular</h2>
+            <ul id="user-list" class="space-y-3 h-64 overflow-y-auto">
+                <!-- Kullanıcılar JS ile eklenecek -->
+                <li class="text-center text-gray-400">Aktif oyuncu aranıyor...</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 3. Oyun Ekranı -->
+    <div id="game-screen" class="view hidden flex flex-col items-center justify-center p-2 md:p-4">
+        <!-- Skor Tablosu -->
+        <div class="w-full max-w-md mb-4 flex justify-between text-lg">
+            <span id="player1-score" class="font-bold text-blue-300">Oyuncu 1: 0</span>
+            <span id="player2-score" class="font-bold text-red-300">Oyuncu 2: 0</span>
+        </div>
+        
+        <!-- Sıra Bilgisi -->
+        <div id="turn-info" class="text-center text-2xl font-bold text-gray-300 mb-4">
+            Oyun Yükleniyor...
+        </div>
+
+        <!-- Oyun Tahtası -->
+        <div id="game-board" class="bg-gray-800 rounded-lg shadow-inner mb-4">
+            <!-- Hücreler JS ile eklenecek -->
+        </div>
+        
+        <!-- Parçalar -->
+        <div id="pieces-container" class="flex justify-center items-center bg-gray-800 p-2 rounded-lg shadow-lg">
+            <!-- Parçalar JS ile eklenecek -->
+        </div>
+        
+        <!-- Pes Et Butonu -->
+        <button id="forfeit-btn" class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+            Pes Et
+        </button>
+    </div>
+
+    <!-- Modallar (Firebase ile aynı) -->
+    
+    <!-- Gelen Davet Modalı -->
+    <div id="invite-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full">
+            <h2 class="text-2xl font-bold text-center mb-4">Oyun Daveti</h2>
+            <p id="invite-data" class="text-center text-lg mb-6">
+                <span id="invite-sender-name" class="font-bold text-yellow-400">...</span> kullanıcısı sizi oyuna davet ediyor!
+            </p>
+            <div class="flex justify-around">
+                <button id="accept-invite-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                    Kabul Et
+                </button>
+                <button id="decline-invite-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                    Reddet
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Genel Mesaj Modalı -->
+    <div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full">
+            <h2 id="message-title" class="text-2xl font-bold text-center mb-4">Mesaj</h2>
+            <p id="message-body" class="text-center text-lg mb-6">...</p>
+            <div class="flex justify-center">
+                <button id="message-close-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+                    Tamam
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Oyun Bitti Modalı -->
+    <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full">
+            <h2 id="game-over-title" class="text-3xl font-bold text-center mb-4">Oyun Bitti!</h2>
+            <p id="game-over-body" class="text-center text-lg whitespace-pre-line mb-8">...</p>
+            <div class="flex justify-center">
+                <button id="game-over-close-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+                    Lobiye Dön
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
+
+
