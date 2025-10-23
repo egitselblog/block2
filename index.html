@@ -354,12 +354,14 @@
                         player1_id: inviterId,
                         player1_name: inviterName,
                         player1_score: 0,
-                        player1_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla
+                        // player1_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla // ESKİ KOD
                         
                         player2_id: currentUserId,
                         player2_name: currentUsername,
                         player2_score: 0,
-                        player2_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla
+                        // player2_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla // ESKİ KOD
+                        
+                        shared_pieces: JSON.stringify(generateNewPieces()), // EKLENDİ: Ortak parçalar
                         
                         board: JSON.stringify(createEmptyBoard()), // JSONB olarak sakla
                         turn: inviterId, // İlk sıra davet edende
@@ -378,6 +380,9 @@
                 
                 if (deleteError) throw deleteError;
 
+                // (EKLENDİ) Davet ekranını kapat
+                document.getElementById('invite-modal').classList.add('hidden');
+                
                 // Oyunu başlat (Oyuncu 2 olarak)
                 startGame(gameId, 2);
                 
@@ -409,6 +414,10 @@
                     (payload) => {
                         if (payload.new.status === 'active') {
                             acceptanceSubscription.unsubscribe(); // Dinleyiciyi kaldır
+                            
+                            // (EKLENDİ) Davet edenin "Davet Gönderildi" modalını kapat
+                            document.getElementById('message-modal').classList.add('hidden');
+                            
                             startGame(gameId, 1); // Oyunu başlat (Oyuncu 1 olarak)
                         }
                     }
@@ -520,8 +529,9 @@
             renderBoard(currentBoardState);
             
             // Parçaları çiz (JSONB'den gelen JSON string'i parse et)
-            const myPiecesKey = `player${playerNumber}_pieces`;
-            currentPiecesState = JSON.parse(game[myPiecesKey]);
+            // const myPiecesKey = `player${playerNumber}_pieces`; // ESKİ KOD
+            // currentPiecesState = JSON.parse(game[myPiecesKey]); // ESKİ KOD
+            currentPiecesState = JSON.parse(game.shared_pieces); // DEĞİŞTİ: Ortak parçaları oku
             renderPieces(currentPiecesState, game.turn === currentUserId);
         }
 
@@ -661,24 +671,28 @@
                 if (clearedLinesCount > 1) scoreGained += clearedLinesCount * 5; // Bonus
                 
                 const myScoreKey = `player${playerNumber}_score`;
-                const myPiecesKey = `player${playerNumber}_pieces`;
-                const opponentPiecesKey = `player${playerNumber === 1 ? 2 : 1}_pieces`;
+                // const myPiecesKey = `player${playerNumber}_pieces`; // ESKİ KOD
+                // const opponentPiecesKey = `player${playerNumber === 1 ? 2 : 1}_pieces`; // ESKİ KOD
                 const opponentId = (playerNumber === 1) ? game.player2_id : game.player1_id;
 
                 let myNewScore = game[myScoreKey] + scoreGained;
                 
-                // 4. Kullandığım parçayı güncelle
-                let myNewPieces = JSON.parse(game[myPiecesKey]);
-                myNewPieces[selectedPiece.index] = null; // Parçayı kullanıldı olarak işaretle
+                // 4. Kullandığım parçayı güncelle (DEĞİŞTİ: Ortak parçaları güncelle)
+                let newSharedPieces = JSON.parse(game.shared_pieces); // DEĞİŞTİ: Ortak parçaları al
+                newSharedPieces[selectedPiece.index] = null; // Parçayı kullanıldı olarak işaretle
                 
-                // 5. Tüm parçalar kullanıldıysa yenilerini ver
-                if (myNewPieces.every(p => p === null)) {
-                    myNewPieces = generateNewPieces();
+                // 6. Rakip için oyun bitti mi kontrol et (parçalar yenilenmeden ÖNCE)
+                const isGameOver = checkGameOver(newSharedPieces, clearedBoard);
+                
+                // 7. Tüm parçalar kullanıldıysa yenilerini ver
+                let piecesToSave = newSharedPieces;
+                if (newSharedPieces.every(p => p === null)) {
+                    piecesToSave = generateNewPieces();
                 }
                 
                 // 6. Rakip için oyun bitti mi kontrol et
-                const opponentPieces = JSON.parse(game[opponentPiecesKey]);
-                const isGameOver = checkGameOver(opponentPieces, clearedBoard);
+                // const opponentPieces = JSON.parse(game[opponentPiecesKey]); // ESKİ KOD
+                // const isGameOver = checkGameOver(opponentPieces, clearedBoard); // ESKİ KOD (Yukarı taşındı)
                 
                 let newStatus = 'active';
                 let winnerId = null;
@@ -704,7 +718,8 @@
                         .update({
                             board: JSON.stringify(clearedBoard),
                             [myScoreKey]: myNewScore,
-                            [myPiecesKey]: JSON.stringify(myNewPieces),
+                            // [myPiecesKey]: JSON.stringify(myNewPieces), // ESKİ KOD
+                            shared_pieces: JSON.stringify(piecesToSave), // DEĞİŞTİ: Ortak parçaları güncelle
                             turn: opponentId, // Sırayı rakibe ver
                             status: newStatus,
                             winner: winnerId,
@@ -1088,4 +1103,5 @@
 
 </body>
 </html>
+
 
