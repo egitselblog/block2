@@ -410,9 +410,15 @@
                 .channel(`public:games:id=eq.${gameId}`)
                 .on('postgres_changes', 
                     // Sadece bu ID'li oyun EKLENDİĞİNDE tetiklen
-                    { event: 'INSERT', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` },
+                    // { event: 'INSERT', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` }, // <-- ESKİ HATALI KOD
+                    
+                    // --- DÜZELTME ---
+                    // 'upsert' komutu 'INSERT' veya 'UPDATE' yapabilir.
+                    // Her iki durumu da yakalamak için 'event: *' kullanıyoruz.
+                    { event: '*', schema: 'public', table: GAMES_TABLE, filter: `id=eq.${gameId}` },
                     (payload) => {
-                        if (payload.new.status === 'active') {
+                        // payload.new, hem INSERT hem de UPDATE olaylarında güncel veriyi içerir
+                        if (payload.new && payload.new.status === 'active') {
                             acceptanceSubscription.unsubscribe(); // Dinleyiciyi kaldır
                             
                             // (EKLENDİ) Davet edenin "Davet Gönderildi" modalını kapat
@@ -1059,5 +1065,3 @@
 
 </body>
 </html>
-
-
