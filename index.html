@@ -41,6 +41,7 @@
         let gameSubscription = null; 
         let lobbySubscription = null;
         let inviteSubscription = null;
+        let heartbeatInterval = null; // <-- EKLENDİ: Yaşam sinyali için
 
         // Oyun tahtası ve parçalar için referanslar
         const gameBoardElement = document.getElementById('game-board');
@@ -121,6 +122,28 @@
         // 10x10 boş bir tahta oluşturur
         function createEmptyBoard() {
             return Array(10).fill(0).map(() => Array(10).fill(0));
+        }
+
+        // (EKLENDİ) Kullanıcının "online" olduğunu sunucuya bildiren periyodik fonksiyon
+        async function sendHeartbeat() {
+            if (!currentUserId) {
+                // Heartbeat'i durdur, kullanıcı (henüz) yok
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+                return;
+            }
+            try {
+                // Sunucudaki 'timestamp' alanını güncelle
+                await supabase
+                    .from(USERS_TABLE)
+                    .update({ 
+                        is_online: true, // Online olduğunu tekrar teyit et
+                        timestamp: new Date().toISOString() 
+                    })
+                    .eq('id', currentUserId);
+            } catch (error) {
+                console.warn("Heartbeat (yaşam sinyali) gönderilemedi:", error.message);
+            }
         }
 
         // --- OYUN GİRİŞ VE LOBİ YÖNETİMİ (SUPABASE) ---
@@ -207,14 +230,23 @@
             
             // Başlangıçta bekleyen davet var mı diye kontrol et
             checkPendingInvite();
+
+            // (EKLENDİ) Lobi'deyken her 15 saniyede bir "yaşam sinyali" (heartbeat) gönder
+            if (heartbeatInterval) clearInterval(heartbeatInterval); // Öncekini temizle
+            sendHeartbeat(); // Hemen bir tane gönder
+            heartbeatInterval = setInterval(sendHeartbeat, 15000); // 15 saniyede bir
         }
 
         // Lobi kullanıcılarını çeken yardımcı fonksiyon
         async function fetchLobbyUsers() {
+            // (DEĞİŞTİ) Aktif kullanıcıları son 30 saniyede sinyal verenler olarak filtrele
+            const timeAgo = new Date(Date.now() - 30000).toISOString(); // 30 saniye önce
+
             const { data: users, error } = await supabase
                 .from(USERS_TABLE)
                 .select('id, name')
                 .eq('is_online', true)
+                .gt('timestamp', timeAgo) // 'timestamp' alanı 'timeAgo'dan büyük olmalı
                 .neq('id', currentUserId); // Kendim hariç
 
             if (error) {
@@ -399,6 +431,10 @@
             if (inviteSubscription) inviteSubscription.unsubscribe();
             lobbySubscription = null;
             inviteSubscription = null;
+            
+            // (EKLENDİ) Lobi heartbeat'ini durdur
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
             
             // Oyun ekranını göster
             showView('game-screen');
@@ -874,15 +910,46 @@
                 showView('login-screen');
             }
             
-            // Kullanıcı online durumunu sayfa kapanırken güncelle
-            window.addEventListener('beforeunload', async () => {
+            // (DEĞİŞTİ) - 'beforeunload' yerine 'pagehide' kullan
+            // Kullanıcı online durumunu sayfa kapanırken/gizlenirken güncelle
+            window.addEventListener('pagehide', () => {
+                // Heartbeat'i durdur
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+
                 if (currentUserId) {
-                    await supabase
+                    // Sayfa kapandığında 'is_online' durumunu false yapmayı dene.
+                    // Bu 'fire-and-forget' (sonucu bekleme) olmalı.
+                    // 'await' kullanmıyoruz çünkü sayfa kapanmadan bitmesi garanti değil.
+                    supabase
                         .from(USERS_TABLE)
                         .update({ is_online: false, timestamp: new Date().toISOString() })
-                        .eq('id', currentUserId);
+                        .eq('id', currentUserId)
+                        .then(response => {
+                             if (response.error) console.warn('Offline update failed on pagehide.');
+                        });
                 }
             });
+            
+            // (EKLENDİ) - Sayfa önbellekten (BFCache) geri yüklenirse
+            window.addEventListener('pageshow', () => {
+                // Sadece lobi ekranındaysak heartbeat'i yeniden başlat
+                if (!document.getElementById('lobby-screen').classList.contains('hidden')) {
+                    if (heartbeatInterval) clearInterval(heartbeatInterval);
+                    sendHeartbeat(); // Hemen bir tane gönder
+                    heartbeatInterval = setInterval(sendHeartbeat, 15000);
+                }
+            });
+
+            // ESKİ GÜVENİLMEZ KOD:
+            // window.addEventListener('beforeunload', async () => {
+            //     if (currentUserId) {
+            //         await supabase
+            //             .from(USERS_TABLE)
+            //             .update({ is_online: false, timestamp: new Date().toISOString() })
+            //             .eq('id', currentUserId);
+            //     }
+            // });
         };
 
     </script>
@@ -1021,5 +1088,4 @@
 
 </body>
 </html>
-
 
