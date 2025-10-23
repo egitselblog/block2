@@ -47,7 +47,8 @@
         const gameBoardElement = document.getElementById('game-board');
         const piecesContainer = document.getElementById('pieces-container');
         
-        let selectedPiece = null; // { index: 0, shape: [[1,1], [1,0]] }
+        // DEĞİŞTİ: selectedPiece kaldırıldı, draggedPieceData eklendi
+        let draggedPieceData = null; // { index: 0, shape: [[1,1], [1,0]], color: '...' }
         let currentBoardState = [];
         let currentPiecesState = [];
 
@@ -514,7 +515,7 @@
             gameSubscription = null;
             currentGameId = null;
             playerNumber = null;
-            selectedPiece = null;
+            draggedPieceData = null; // DEĞİŞTİ: selectedPiece yerine
             
             showMessage('Oyun Bitti', message);
             showView('lobby-screen'); // Lobiye dön
@@ -554,7 +555,7 @@
             renderPieces(currentPiecesState, game.turn === currentUserId);
         }
 
-        // Oyun tahtasını HTML'e dök (Firebase ile aynı)
+        // Oyun tahtasını HTML'e dök (DEĞİŞTİ: Sürükle-bırak eventleri eklendi)
         function renderBoard(board) {
             gameBoardElement.innerHTML = '';
             board.forEach((row, y) => {
@@ -567,22 +568,39 @@
                     if (cell === 1) { // Dolu hücre
                         cellEl.classList.add('bg-gray-400');
                     } else { // Boş hücre
-                        cellEl.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                        cellEl.classList.add('bg-gray-800'); // hover:bg-gray-700 kaldırıldı, önizleme ile yönetilecek
                     }
                     
-                    // Hücreye tıklama olayı
-                    cellEl.addEventListener('click', () => handleCellClick(x, y));
+                    // --- DEĞİŞİKLİKLER ---
+                    // Tıklama event'i kaldırıldı
                     
-                    // Parçayı yerleştirmeden önce önizleme (hover)
-                    cellEl.addEventListener('mouseenter', () => showPlacementPreview(x, y, true));
-                    cellEl.addEventListener('mouseleave', () => showPlacementPreview(x, y, false));
+                    // Parçayı yerleştirmeden önce önizleme (hover yerine dragover)
+                    cellEl.addEventListener('dragover', (e) => {
+                        e.preventDefault(); // Bırakmaya izin ver
+                        showPlacementPreview(x, y, true);
+                    });
+                    
+                    cellEl.addEventListener('dragleave', (e) => {
+                        e.preventDefault();
+                        showPlacementPreview(x, y, false);
+                    });
+                    
+                    cellEl.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        showPlacementPreview(x, y, false); // Önizlemeyi temizle
+                        const pieceDataString = e.dataTransfer.getData('text/plain');
+                        if (!pieceDataString) return;
+                        const pieceData = JSON.parse(pieceDataString);
+                        handlePlacePiece(x, y, pieceData); // Yerleştirme fonksiyonunu çağır
+                    });
+                    // --- DEĞİŞİKLİKLER SONU ---
                     
                     gameBoardElement.appendChild(cellEl);
                 });
             });
         }
         
-        // Kullanıcının parçalarını HTML'e dök (Firebase ile aynı)
+        // Kullanıcının parçalarını HTML'e dök (DEĞİŞTİ: Sürükleme eventleri eklendi)
         function renderPieces(pieces, isMyTurn) {
             piecesContainer.innerHTML = '';
             pieces.forEach((piece, index) => {
@@ -594,21 +612,35 @@
                 }
                 
                 const pieceEl = document.createElement('div');
-                pieceEl.className = 'w-24 h-24 m-2 p-2 flex flex-col items-center justify-center bg-gray-700 rounded-lg cursor-pointer transition-all';
+                pieceEl.className = 'w-24 h-24 m-2 p-2 flex flex-col items-center justify-center bg-gray-700 rounded-lg transition-all';
                 pieceEl.dataset.index = index;
                 
-                if (selectedPiece && selectedPiece.index === index) {
-                    pieceEl.classList.add('ring-4', 'ring-blue-500', 'scale-105');
-                }
+                // selectedPiece ile ilgili kısım kaldırıldı
                 
                 if (!isMyTurn) {
                     pieceEl.classList.add('opacity-50', 'cursor-not-allowed');
                 } else {
-                    pieceEl.addEventListener('click', () => {
-                        selectedPiece = { index: index, shape: piece.shape, color: piece.color };
-                        // Arayüzü anında güncelle (renderPieces tekrar çağrılacak)
-                        renderPieces(pieces, isMyTurn); 
+                    // --- DEĞİŞİKLİKLER ---
+                    pieceEl.classList.add('cursor-grab'); // Sürüklenebilir olduğunu belirt
+                    pieceEl.setAttribute('draggable', 'true'); // Sürüklenebilir yap
+                    
+                    // Tıklama event'i yerine sürükleme event'leri
+                    pieceEl.addEventListener('dragstart', (e) => {
+                        draggedPieceData = { index: index, shape: piece.shape, color: piece.color };
+                        e.dataTransfer.setData('text/plain', JSON.stringify(draggedPieceData));
+                        e.dataTransfer.effectAllowed = 'move';
+                        // Tarayıcının varsayılan sürükleme gölgesini kullanmasına izin ver
+                        // Orijinal elemanı hafifçe gizle
+                        setTimeout(() => {
+                            e.target.classList.add('opacity-30');
+                        }, 0);
                     });
+                    
+                    pieceEl.addEventListener('dragend', (e) => {
+                        draggedPieceData = null; // Sürüklenen parçayı temizle
+                        e.target.classList.remove('opacity-30'); // Görünürlüğü geri getir
+                    });
+                    // --- DEĞİŞİKLİKLER SONU ---
                 }
                 
                 // Parçanın küçük bir görselini oluştur
@@ -630,11 +662,12 @@
             });
         }
         
-        // Parça yerleştirme önizlemesi (Firebase ile aynı)
+        // Parça yerleştirme önizlemesi (DEĞİŞTİ: selectedPiece yerine draggedPieceData kullanır)
         function showPlacementPreview(startX, startY, show) {
-            if (!selectedPiece || !gameBoardElement) return;
+            // DEĞİŞTİ: selectedPiece yerine draggedPieceData
+            if (!draggedPieceData || !gameBoardElement) return;
 
-            const { shape } = selectedPiece;
+            const { shape } = draggedPieceData;
             const isValid = checkValidPlacement(shape, startX, startY, currentBoardState);
             
             for (let y = 0; y < shape.length; y++) {
@@ -645,9 +678,10 @@
                         const cell = gameBoardElement.querySelector(`[data-x="${boardX}"][data-y="${boardY}"]`);
                         if (cell) {
                             if (show) {
+                                // Önizleme rengi uygula
                                 cell.classList.add(isValid ? 'bg-green-300' : 'bg-red-300', 'opacity-50');
                             } else {
-                                // Sadece hover sınıflarını kaldır, doluysa kendi rengini koru
+                                // Önizleme rengini kaldır
                                 cell.classList.remove('bg-green-300', 'bg-red-300', 'opacity-50');
                             }
                         }
@@ -656,8 +690,8 @@
             }
         }
 
-        // Tahtaya tıklamayı yönet (Supabase update)
-        async function handleCellClick(x, y) {
+        // Tahtaya tıklamayı yönet (DEĞİŞTİ: handlePlacePiece olarak yeniden adlandırıldı ve parça verisini parametre aldı)
+        async function handlePlacePiece(x, y, pieceData) {
             // Yarış koşullarını (race conditions) önlemek için önce mevcut durumu al
             const { data: game, error: fetchError } = await supabase
                 .from(GAMES_TABLE)
@@ -670,8 +704,8 @@
                 return;
             }
 
-            // Sıra bende mi ve parça seçili mi?
-            if (game.turn !== currentUserId || !selectedPiece) {
+            // Sıra bende mi ve parça seçili mi? (DEĞİŞTİ: pieceData kontrolü)
+            if (game.turn !== currentUserId || !pieceData) {
                 return;
             }
             
@@ -680,10 +714,10 @@
                 ? JSON.parse(game.board) 
                 : game.board;
             
-            // Yerleştirme geçerli mi?
-            if (checkValidPlacement(selectedPiece.shape, x, y, board)) {
+            // Yerleştirme geçerli mi? (DEĞİŞTİ: pieceData.shape kullanıldı)
+            if (checkValidPlacement(pieceData.shape, x, y, board)) {
                 // 1. Parçayı tahtaya yerleştir
-                const { newBoard, cellsPlaced } = placePiece(selectedPiece.shape, x, y, board);
+                const { newBoard, cellsPlaced } = placePiece(pieceData.shape, x, y, board);
                 
                 // 2. Çizgileri kontrol et ve temizle
                 const { clearedBoard, clearedLinesCount } = clearLines(newBoard);
@@ -704,14 +738,17 @@
                 let newSharedPieces = typeof game.shared_pieces === 'string'
                     ? JSON.parse(game.shared_pieces)
                     : game.shared_pieces;
-                newSharedPieces[selectedPiece.index] = null; // Parçayı kullanıldı olarak işaretle
+                
+                // DEĞİŞTİ: Kopyasını oluşturmak önemli (immutable state)
+                let newSharedPiecesCopy = [...newSharedPieces]; 
+                newSharedPiecesCopy[pieceData.index] = null; // Parçayı kullanıldı olarak işaretle
                 
                 // 6. Oyun bitti mi kontrol et (parçalar yenilenmeden ÖNCE)
-                const isGameOver = checkGameOver(newSharedPieces, clearedBoard);
+                const isGameOver = checkGameOver(newSharedPiecesCopy, clearedBoard);
                 
                 // 7. Tüm parçalar kullanıldıysa yenilerini ver
-                let piecesToSave = newSharedPieces;
-                if (newSharedPieces.every(p => p === null)) {
+                let piecesToSave = newSharedPiecesCopy;
+                if (newSharedPiecesCopy.every(p => p === null)) {
                     piecesToSave = generateNewPieces();
                 }
                 
@@ -752,7 +789,7 @@
 
                     if (updateError) throw updateError;
                     
-                    selectedPiece = null; // Seçimi temizle
+                    // selectedPiece = null; // Artık bu değişkene gerek yok
                     
                 } catch (error) {
                     console.error("Hamle güncelleme hatası:", error);
@@ -979,6 +1016,10 @@
                 width: 400px; /* 10 * 40px */
                 height: 400px; /* 10 * 40px */
             }
+        }
+        /* Sürüklenen parçanın opaklığını azalt */
+        .dragging {
+            opacity: 0.3;
         }
     </style>
 </head>
