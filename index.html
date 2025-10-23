@@ -41,7 +41,7 @@
         let gameSubscription = null; 
         let lobbySubscription = null;
         let inviteSubscription = null;
-        let heartbeatInterval = null; // <-- EKLENDİ: Yaşam sinyali için
+        let heartbeatInterval = null; // EKLENDİ: Yaşam sinyali için
 
         // Oyun tahtası ve parçalar için referanslar
         const gameBoardElement = document.getElementById('game-board');
@@ -124,29 +124,28 @@
             return Array(10).fill(0).map(() => Array(10).fill(0));
         }
 
-        // (EKLENDİ) Kullanıcının "online" olduğunu sunucuya bildiren periyodik fonksiyon
+        // --- OYUN GİRİŞ VE LOBİ YÖNETİMİ (SUPABASE) ---
+
+        // (EKLENDİ) Yaşam sinyali
         async function sendHeartbeat() {
-            if (!currentUserId) {
-                // Heartbeat'i durdur, kullanıcı (henüz) yok
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-                return;
-            }
+            if (!currentUserId) return;
             try {
-                // Sunucudaki 'timestamp' alanını güncelle
-                await supabase
+                // 'upsert' kullanarak kullanıcıyı ekle VEYA 'timestamp'i güncelle
+                const { error } = await supabase
                     .from(USERS_TABLE)
-                    .update({ 
-                        is_online: true, // Online olduğunu tekrar teyit et
-                        timestamp: new Date().toISOString() 
-                    })
-                    .eq('id', currentUserId);
+                    .upsert({ 
+                        id: currentUserId, // PK (auth.users.id ile aynı)
+                        name: currentUsername, // İsim değişmiş olabilir
+                        is_online: true, 
+                        timestamp: new Date().toISOString()
+                    });
+                if (error) throw error;
             } catch (error) {
-                console.warn("Heartbeat (yaşam sinyali) gönderilemedi:", error.message);
+                console.warn("Heartbeat failed:", error.message);
+                // Bu kritik bir hata değil, sadece bir sonraki sinyal başarısız olur
             }
         }
 
-        // --- OYUN GİRİŞ VE LOBİ YÖNETİMİ (SUPABASE) ---
 
         // Kullanıcı girişi
         document.getElementById('login-btn').addEventListener('click', async () => {
@@ -164,18 +163,8 @@
             currentUsername = username;
             
             try {
-                // Kullanıcıyı 'users' tablosuna ekle veya güncelle (UPSERT)
-                // 'id' alanı auth.users.id'ye bağlı olmalı
-                const { error } = await supabase
-                    .from(USERS_TABLE)
-                    .upsert({ 
-                        id: currentUserId, // PK (auth.users.id ile aynı)
-                        name: currentUsername, 
-                        is_online: true, 
-                        timestamp: new Date().toISOString() // serverTimestamp yerine
-                    });
-
-                if (error) throw error;
+                // (DEĞİŞTİ) Sinyali hemen gönder (girişte)
+                await sendHeartbeat();
                 
                 // Lobiyi göster
                 document.getElementById('user-id-display').textContent = `Kullanıcı ID: ${currentUserId}`;
@@ -192,6 +181,10 @@
         async function setupLobbyListeners() {
             // Önce mevcut kullanıcıları bir kez çek
             await fetchLobbyUsers();
+            
+            // (EKLENDİ) Yaşam sinyalini başlat
+            if (heartbeatInterval) clearInterval(heartbeatInterval); // Öncekini temizle
+            heartbeatInterval = setInterval(sendHeartbeat, 15000); // Her 15 saniyede bir
 
             // Aktif kullanıcıları (users tablosu) dinle
             if (lobbySubscription) lobbySubscription.unsubscribe(); // Önceki aboneliği kaldır
@@ -230,23 +223,18 @@
             
             // Başlangıçta bekleyen davet var mı diye kontrol et
             checkPendingInvite();
-
-            // (EKLENDİ) Lobi'deyken her 15 saniyede bir "yaşam sinyali" (heartbeat) gönder
-            if (heartbeatInterval) clearInterval(heartbeatInterval); // Öncekini temizle
-            sendHeartbeat(); // Hemen bir tane gönder
-            heartbeatInterval = setInterval(sendHeartbeat, 15000); // 15 saniyede bir
         }
 
         // Lobi kullanıcılarını çeken yardımcı fonksiyon
         async function fetchLobbyUsers() {
-            // (DEĞİŞTİ) Aktif kullanıcıları son 30 saniyede sinyal verenler olarak filtrele
-            const timeAgo = new Date(Date.now() - 30000).toISOString(); // 30 saniye önce
-
+            // (DEĞİŞTİ) Sadece son 30 saniye içinde sinyal göndermiş olanları çek
+            const thirtySecondsAgo = new Date(Date.now() - 30000);
+            
             const { data: users, error } = await supabase
                 .from(USERS_TABLE)
                 .select('id, name')
-                .eq('is_online', true)
-                .gt('timestamp', timeAgo) // 'timestamp' alanı 'timeAgo'dan büyük olmalı
+                // .eq('is_online', true) // (KALDIRILDI) - timestamp kontrolü daha güvenilir
+                .gt('timestamp', thirtySecondsAgo.toISOString()) // (EKLENDİ)
                 .neq('id', currentUserId); // Kendim hariç
 
             if (error) {
@@ -346,8 +334,20 @@
             const gameId = `${inviterId}_${currentUserId}`; // Sabit bir oyun ID'si
             
             try {
+                // ---
+                // HATA DÜZELTMESİ (AÇIKLAMA):
+                // Eğer konsolda "Could not find the 'shared_pieces' column" hatası alıyorsanız,
+                // bunun anlamı Supabase'teki 'games' tablonuzda 'shared_pieces' sütunu eksiktir.
+                //
+                // ÇÖZÜM: Supabase projenizdeki "SQL Editor" bölümüne gidin ve 
+                // aşağıdaki komutu yapıştırıp çalıştırın:
+                //
+                // ALTER TABLE public.games ADD COLUMN shared_pieces JSONB;
+                //
+                // Bu komut, eksik olan 'shared_pieces' sütununu 'games' tablonuza ekleyecektir.
+                // ---
+
                 // (DEĞİŞTİ) Yeni oyun dökümanı oluştur VEYA mevcut oyunu sıfırla (UPSERT)
-                // Bu, aynı oyuncuların tekrar oynamak istemesi durumunda (PK ihlali) hatayı önler.
                 const { error: gameError } = await supabase
                     .from(GAMES_TABLE)
                     .upsert({ // <-- DEĞİŞTİ: insert yerine upsert
@@ -355,14 +355,12 @@
                         player1_id: inviterId,
                         player1_name: inviterName,
                         player1_score: 0,
-                        // player1_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla // ESKİ KOD
                         
                         player2_id: currentUserId,
                         player2_name: currentUsername,
                         player2_score: 0,
-                        // player2_pieces: JSON.stringify(generateNewPieces()), // JSONB olarak sakla // ESKİ KOD
                         
-                        shared_pieces: JSON.stringify(generateNewPieces()), // EKLENDİ: Ortak parçalar
+                        shared_pieces: JSON.stringify(generateNewPieces()), // DEĞİŞTİ: Ortak parçalar
                         
                         board: JSON.stringify(createEmptyBoard()), // JSONB olarak sakla
                         turn: inviterId, // İlk sıra davet edende
@@ -440,11 +438,9 @@
             // Lobi dinleyicilerini durdur
             if (lobbySubscription) lobbySubscription.unsubscribe();
             if (inviteSubscription) inviteSubscription.unsubscribe();
+            if (heartbeatInterval) clearInterval(heartbeatInterval); // (EKLENDİ) Yaşam sinyalini durdur
             lobbySubscription = null;
             inviteSubscription = null;
-            
-            // (EKLENDİ) Lobi heartbeat'ini durdur
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
             heartbeatInterval = null;
             
             // Oyun ekranını göster
@@ -683,7 +679,7 @@
                 let newSharedPieces = JSON.parse(game.shared_pieces); // DEĞİŞTİ: Ortak parçaları al
                 newSharedPieces[selectedPiece.index] = null; // Parçayı kullanıldı olarak işaretle
                 
-                // 6. Rakip için oyun bitti mi kontrol et (parçalar yenilenmeden ÖNCE)
+                // 6. Oyun bitti mi kontrol et (parçalar yenilenmeden ÖNCE)
                 const isGameOver = checkGameOver(newSharedPieces, clearedBoard);
                 
                 // 7. Tüm parçalar kullanıldıysa yenilerini ver
@@ -691,10 +687,6 @@
                 if (newSharedPieces.every(p => p === null)) {
                     piecesToSave = generateNewPieces();
                 }
-                
-                // 6. Rakip için oyun bitti mi kontrol et
-                // const opponentPieces = JSON.parse(game[opponentPiecesKey]); // ESKİ KOD
-                // const isGameOver = checkGameOver(opponentPieces, clearedBoard); // ESKİ KOD (Yukarı taşındı)
                 
                 let newStatus = 'active';
                 let winnerId = null;
@@ -713,7 +705,7 @@
                     }
                 }
 
-                // 7. Supabase'i güncelle
+                // 8. Supabase'i güncelle
                 try {
                     const { error: updateError } = await supabase
                         .from(GAMES_TABLE)
@@ -927,46 +919,8 @@
                 showView('login-screen');
             }
             
-            // (DEĞİŞTİ) - 'beforeunload' yerine 'pagehide' kullan
-            // Kullanıcı online durumunu sayfa kapanırken/gizlenirken güncelle
-            window.addEventListener('pagehide', () => {
-                // Heartbeat'i durdur
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
-
-                if (currentUserId) {
-                    // Sayfa kapandığında 'is_online' durumunu false yapmayı dene.
-                    // Bu 'fire-and-forget' (sonucu bekleme) olmalı.
-                    // 'await' kullanmıyoruz çünkü sayfa kapanmadan bitmesi garanti değil.
-                    supabase
-                        .from(USERS_TABLE)
-                        .update({ is_online: false, timestamp: new Date().toISOString() })
-                        .eq('id', currentUserId)
-                        .then(response => {
-                             if (response.error) console.warn('Offline update failed on pagehide.');
-                        });
-                }
-            });
-            
-            // (EKLENDİ) - Sayfa önbellekten (BFCache) geri yüklenirse
-            window.addEventListener('pageshow', () => {
-                // Sadece lobi ekranındaysak heartbeat'i yeniden başlat
-                if (!document.getElementById('lobby-screen').classList.contains('hidden')) {
-                    if (heartbeatInterval) clearInterval(heartbeatInterval);
-                    sendHeartbeat(); // Hemen bir tane gönder
-                    heartbeatInterval = setInterval(sendHeartbeat, 15000);
-                }
-            });
-
-            // ESKİ GÜVENİLMEZ KOD:
-            // window.addEventListener('beforeunload', async () => {
-            //     if (currentUserId) {
-            //         await supabase
-            //             .from(USERS_TABLE)
-            //             .update({ is_online: false, timestamp: new Date().toISOString() })
-            //             .eq('id', currentUserId);
-            //     }
-            // });
+            // (KALDIRILDI) 'beforeunload' olayı güvenilir değil, 'heartbeat' kullanılıyor
+            // window.addEventListener('beforeunload', async () => { ... });
         };
 
     </script>
@@ -1029,7 +983,7 @@
     </div>
 
     <!-- 3. Oyun Ekranı -->
-    <div id="game-screen" class="view hidden flex flex-col items-center justify-center p-2 md:p-4">
+    <div id="game-screen" class="view hidden flex-col items-center justify-center p-2 md:p-4">
         <!-- Skor Tablosu -->
         <div class="w-full max-w-md mb-4 flex justify-between text-lg">
             <span id="player1-score" class="font-bold text-blue-300">Oyuncu 1: 0</span>
@@ -1105,6 +1059,5 @@
 
 </body>
 </html>
-
 
 
