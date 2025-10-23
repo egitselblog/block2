@@ -346,10 +346,11 @@
             const gameId = `${inviterId}_${currentUserId}`; // Sabit bir oyun ID'si
             
             try {
-                // Yeni oyun dökümanı oluştur
+                // (DEĞİŞTİ) Yeni oyun dökümanı oluştur VEYA mevcut oyunu sıfırla (UPSERT)
+                // Bu, aynı oyuncuların tekrar oynamak istemesi durumunda (PK ihlali) hatayı önler.
                 const { error: gameError } = await supabase
                     .from(GAMES_TABLE)
-                    .insert({
+                    .upsert({ // <-- DEĞİŞTİ: insert yerine upsert
                         id: gameId, // PK
                         player1_id: inviterId,
                         player1_name: inviterName,
@@ -370,7 +371,7 @@
                         last_move_by: null
                     });
                 
-                if (gameError) throw gameError;
+                if (gameError) throw gameError; // Hata varsa catch bloğuna atla
 
                 // Daveti sil (PK 'to_id' idi)
                 const { error: deleteError } = await supabase
@@ -387,7 +388,8 @@
                 startGame(gameId, 2);
                 
             } catch (error) {
-                console.error("Davet kabul etme hatası:", error);
+                // (DEĞİŞTİ) Hatayı konsola daha detaylı yazdır
+                console.error("Davet kabul etme hatası (Supabase):", error.message);
                 showMessage('Hata', 'Oyuna katılırken bir sorun oluştu.');
             }
         });
@@ -1103,5 +1105,6 @@
 
 </body>
 </html>
+
 
 
